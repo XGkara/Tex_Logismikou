@@ -93,7 +93,6 @@
         android:layout_marginEnd="15dp"
         android:layout_marginBottom="15dp"
         android:backgroundTint="@color/black"
-        android:onClick="changelayout2"
         android:text="REGISTER"
         android:textSize="25dp" />
 
