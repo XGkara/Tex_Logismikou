@@ -22,6 +22,14 @@ public class Signup extends AppCompatActivity {
             }
         });
 
+        TextView btn1=findViewById(R.id.signupbtn);
+        btn1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(Signup.this,Login.class));
+            }
+        });
+
 
     }
 }
