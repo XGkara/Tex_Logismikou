@@ -68,12 +68,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
-
         myMap = googleMap;
 
-        LatLng sydney = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
-        myMap.addMarker(new MarkerOptions().position(sydney).title("My Location"));
-        myMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        if (currentLocation != null) {
+            LatLng lcn = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+            myMap.addMarker(new MarkerOptions().position(lcn).title("My Location"));
+            myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lcn, 15f)); // Adjust zoom level as needed
+        } else {
+            Toast.makeText(this, "Unable to get current location", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
