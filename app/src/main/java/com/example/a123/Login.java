@@ -19,16 +19,31 @@ public class Login extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(Login.this,Signup.class));
+                overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
             }
+
+            public void finish() {
+                Login.super.finish();
+                overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+            }
+
+
+
         });
         TextView btn1=findViewById(R.id.loginButton);
 
         btn1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) { startActivity(new Intent (Login.this, MainActivity.class));
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+            }
 
+            public void finish() {
+                Login.super.finish();
+                overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
             }
         });
+
 
 
     }
