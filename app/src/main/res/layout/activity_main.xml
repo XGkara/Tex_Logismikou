@@ -13,7 +13,7 @@
         android:name="com.google.android.gms.maps.SupportMapFragment"
         tools:layout="@layout/activity_signup" />
     <Button
-        android:id="@+id/button1"
+        android:id="@+id/SignOutbtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="LogOut"

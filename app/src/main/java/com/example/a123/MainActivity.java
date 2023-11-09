@@ -43,14 +43,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     FirebaseAuth auth;
     FirebaseUser user;
 
-    Button button;
+    Button signOutbtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        button = findViewById(R.id.button1);
+        signOutbtn = findViewById(R.id.SignOutbtn);
         auth = FirebaseAuth.getInstance();
         user = auth.getCurrentUser();
         if (user == null) {
@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             finish();
         }
 
-        button.setOnClickListener(new View.OnClickListener() {
+        signOutbtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 FirebaseAuth.getInstance().signOut();
