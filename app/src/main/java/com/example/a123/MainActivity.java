@@ -150,7 +150,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lcn, 15f)); // Adjust zoom level as needed
         } else {
             Toast.makeText(this, "Unable to get current location", Toast.LENGTH_SHORT).show();
+
+
         }
+        myMap.getUiSettings().setZoomControlsEnabled(true);
+        myMap.getUiSettings().setCompassEnabled(true);
+
     }
 
     @Override
