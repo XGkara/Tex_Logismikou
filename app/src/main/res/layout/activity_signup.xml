@@ -7,16 +7,19 @@
     android:background="@drawable/background"
     tools:context=".MainActivity">
 
-    <com.google.android.material.textview.MaterialTextView
+    <TextView
+        android:id="@+id/signuptitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/signuptitle"
-        android:text="Sign up"
-        android:textSize="35dp"
-        android:textStyle="bold"
-        android:textColor="@color/white"
+        android:layout_marginStart="50dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginEnd="50dp"
+        android:layout_marginBottom="50dp"
         android:gravity="center"
-        android:layout_margin="20dp"/>
+        android:text="Sign up"
+        android:textColor="@color/white"
+        android:textSize="45sp"
+        android:textStyle="bold" />
 
 
 
@@ -71,9 +74,10 @@
         android:layout_marginTop="15dp"
         android:layout_marginEnd="15dp"
         android:layout_marginBottom="15dp"
+        android:textColor="@color/white"
         android:backgroundTint="@color/black"
         android:text="REGISTER"
-        android:textSize="25dp" />
+        android:textSize="22dp" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/qLogIn"
@@ -82,6 +86,7 @@
         android:layout_below="@id/signupbtn"
         android:text="Login?"
         android:layout_centerHorizontal="true"
+        android:backgroundTint="@color/orange"
         android:textColor="@color/white" />
 
 </RelativeLayout>
