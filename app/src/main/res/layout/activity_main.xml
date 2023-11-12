@@ -21,18 +21,6 @@
         android:name="com.google.android.gms.maps.SupportMapFragment"
         tools:layout="@layout/activity_signup" />
 
-    <Button
-        android:id="@+id/SignOutbtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="LogOut"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.96" />
-
         <SearchView
             android:id="@+id/SearchView"
             android:layout_width="wrap_content"
@@ -40,13 +28,14 @@
             android:layout_margin="10dp"
             android:background="@drawable/bg_search_view"
             android:elevation="5dp"
-            android:gravity="center"
             android:iconifiedByDefault="false"
             android:queryHint="Search..."
             app:layout_constraintBottom_toBottomOf="@+id/map"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.494"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.042" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
