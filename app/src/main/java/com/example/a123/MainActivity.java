@@ -10,6 +10,9 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -28,6 +31,8 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -41,6 +46,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
 
+    private static final int Request_CODE=101;
     private final int FINE_PERMISSION_CODE = 1;
     private GoogleMap myMap;
 
@@ -58,7 +64,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         setContentView(R.layout.activity_main);
 
         mapSearchView = findViewById(R.id.SearchView);
-
+        checkPermission();
         signOutbtn = findViewById(R.id.SignOutbtn);
         auth = FirebaseAuth.getInstance();
         user = auth.getCurrentUser();
@@ -160,6 +166,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         myMap.getUiSettings().setZoomControlsEnabled(true);
         myMap.getUiSettings().setCompassEnabled(true);
 
+        LatLng serres = new LatLng(41.07670157862302, 23.554400400271827);
+        myMap.addMarker(new MarkerOptions().position(serres).title("serres")
+                .icon(bitmapDescriptor(getApplicationContext(),R.drawable.pin)));
+
+        myMap.moveCamera(CameraUpdateFactory.newLatLng(serres));
+        CameraUpdate center= CameraUpdateFactory.newLatLng(serres);
     }
 
     @Override
@@ -171,6 +183,34 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }else {
                 Toast.makeText(this, "Location permission is denied, please allow the permission", Toast.LENGTH_SHORT).show();
             }
+        }
+    }
+
+
+
+    private BitmapDescriptor bitmapDescriptor(Context context,int vectorResId){
+        Drawable vectorDrawable= ContextCompat.getDrawable(context,vectorResId);
+        vectorDrawable.setBounds(0,0, vectorDrawable.getIntrinsicWidth(),vectorDrawable.getIntrinsicHeight());
+        Bitmap bitmap=Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(),
+                vectorDrawable.getIntrinsicHeight(),Bitmap.Config.ARGB_8888);
+        Canvas canvas=new Canvas(bitmap);
+        vectorDrawable.draw(canvas);
+        return BitmapDescriptorFactory.fromBitmap(bitmap);
+    }
+
+    private void checkPermission(){
+        if (ActivityCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION)==PackageManager.PERMISSION_GRANTED
+            && ActivityCompat.checkSelfPermission( this,Manifest.permission.ACCESS_COARSE_LOCATION)==PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.ACCESS_FINE_LOCATION},Request_CODE);
+            return;
+        }
+    }
+    public void onRequestPermissionResult(int requestCode,@NonNull String[] permissions, @NonNull int[] grantResults){
+        switch (Request_CODE){
+            case Request_CODE:
+                if (grantResults.length>0 && grantResults[0]==PackageManager.PERMISSION_GRANTED){
+                    checkPermission();
+                }
         }
     }
 }
