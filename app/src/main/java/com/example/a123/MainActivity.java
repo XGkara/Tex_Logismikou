@@ -40,18 +40,15 @@ import java.io.IOException;
 import java.util.List;
 
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,OnMapReadyCallback  {
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, NavigationView.OnNavigationItemSelectedListener  {
 
     private final int FINE_PERMISSION_CODE = 1;
     private GoogleMap myMap;
-
     private SearchView mapSearchView;
     Location currentLocation;
     FusedLocationProviderClient fusedLocationProviderClient;
     FirebaseAuth auth;
     FirebaseUser user;
-
-    Button signOutbtn;
 
     private DrawerLayout drawerLayout;
 
@@ -59,7 +56,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mapSearchView = findViewById(R.id.SearchView);
 
+        auth = FirebaseAuth.getInstance();
+        user = auth.getCurrentUser();
+        if (user == null) {
+            Intent intent = new Intent(getApplicationContext(), Login.class);
+            startActivity(intent);
+            finish();
+        }
+
+
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        getLastLocation();
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -79,19 +88,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             navigationView.setCheckedItem(R.id.nav_home);
         }
 
-        mapSearchView = findViewById(R.id.SearchView);
-
-        auth = FirebaseAuth.getInstance();
-        user = auth.getCurrentUser();
-        if (user == null) {
-            Intent intent = new Intent(getApplicationContext(), Login.class);
-            startActivity(intent);
-            finish();
-        }
-
-
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-        getLastLocation();
 
 
     }
@@ -157,7 +153,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (currentLocation != null) {
             LatLng lcn = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
             myMap.addMarker(new MarkerOptions().position(lcn).title("My Location"));
-            myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lcn, 15f)); // Adjust zoom level as needed
+            myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lcn, 15f));
         } else {
             Toast.makeText(this, "Unable to get current location", Toast.LENGTH_SHORT).show();
 
