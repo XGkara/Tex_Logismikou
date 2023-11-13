@@ -14,28 +14,20 @@
         android:layout_height="match_parent">
 
 
-    <androidx.fragment.app.FragmentContainerView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/map"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
-        tools:layout="@layout/activity_signup" />
-
         <SearchView
             android:id="@+id/SearchView"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="40dp"
             android:layout_margin="10dp"
+            android:layout_marginTop="5dp"
             android:background="@drawable/bg_search_view"
             android:elevation="5dp"
             android:iconifiedByDefault="false"
             android:queryHint="Search..."
-            app:layout_constraintBottom_toBottomOf="@+id/map"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.494"
+            app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.042" />
+            app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -56,7 +48,15 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/fragment_container"/>
+            android:id="@+id/fragment_container">
+
+            <androidx.fragment.app.FragmentContainerView
+                android:id="@+id/map"
+                android:name="com.google.android.gms.maps.SupportMapFragment"
+                android:layout_width="match_parent"
+                android:layout_height="600dp"
+                tools:layout="@layout/activity_signup" />
+        </FrameLayout>
 
     </LinearLayout>
 
