@@ -171,7 +171,23 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .icon(bitmapDescriptor(getApplicationContext(),R.drawable.pin)));
 
         myMap.moveCamera(CameraUpdateFactory.newLatLng(serres));
-        CameraUpdate center= CameraUpdateFactory.newLatLng(serres);
+
+        LatLng hotel = new LatLng(41.10409809049689, 23.549068805161838);
+        myMap.addMarker(new MarkerOptions().position(hotel).title("hotel")
+                .icon(bitmapDescriptor(getApplicationContext(),R.drawable.pin)));
+
+        myMap.moveCamera(CameraUpdateFactory.newLatLng(hotel));
+
+        LatLng mouseio_serres = new LatLng(41.091226420839696, 23.54935511484131);
+        myMap.addMarker(new MarkerOptions().position(mouseio_serres).title("mouseio_serres")
+                .icon(bitmapDescriptor(getApplicationContext(),R.drawable.pin)));
+
+        myMap.moveCamera(CameraUpdateFactory.newLatLng(mouseio_serres));
+
+        CameraUpdate center= CameraUpdateFactory.newLatLng(mouseio_serres);
+        CameraUpdate zoom=CameraUpdateFactory.zoomTo(12);
+        myMap.moveCamera(center);
+        myMap.moveCamera(zoom);
     }
 
     @Override
