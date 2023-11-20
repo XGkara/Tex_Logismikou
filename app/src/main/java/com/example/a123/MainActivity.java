@@ -6,12 +6,17 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -28,10 +33,13 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -68,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mapSearchView = findViewById(R.id.SearchView);
@@ -193,6 +202,21 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
         }
+
+        LatLng serres = new LatLng(41.07670157862302, 23.554400400271827);
+        myMap.addMarker(new MarkerOptions().position(serres).title("serres")
+                .icon(bitmapDescriptor(getApplicationContext(),R.drawable.pin)));
+        LatLng hotel = new LatLng(41.10409809049689, 23.549068805161838);
+        myMap.addMarker(new MarkerOptions().position(hotel).title("hotel")
+                .icon(bitmapDescriptor(getApplicationContext(),R.drawable.pin)));
+
+
+        LatLng mouseio_serres = new LatLng(41.091226420839696, 23.54935511484131);
+        myMap.addMarker(new MarkerOptions().position(mouseio_serres).title("mouseio_serres")
+                .icon(bitmapDescriptor(getApplicationContext(),R.drawable.pin)));
+        
+
+
         myMap.getUiSettings().setZoomControlsEnabled(true);
         myMap.getUiSettings().setCompassEnabled(true);
 
@@ -224,6 +248,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         drawerLayout.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private BitmapDescriptor bitmapDescriptor(Context context, int vectorResId){
+        Drawable vectorDrawable= ContextCompat.getDrawable(context,vectorResId);
+        vectorDrawable.setBounds(0,0, vectorDrawable.getIntrinsicWidth(),vectorDrawable.getIntrinsicHeight());
+        Bitmap bitmap=Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(),
+                vectorDrawable.getIntrinsicHeight(),Bitmap.Config.ARGB_8888);
+        Canvas canvas=new Canvas(bitmap);
+        vectorDrawable.draw(canvas);
+        return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
 
 
