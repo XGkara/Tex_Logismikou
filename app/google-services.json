@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAkN5S8_mhBiljsTKC7LuvT_eCt1Z8DQFI"
+          "current_key": "${MAPS_API_KEY}"
         }
       ],
       "services": {
