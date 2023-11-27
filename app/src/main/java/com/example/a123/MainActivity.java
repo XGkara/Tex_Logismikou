@@ -46,6 +46,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -55,6 +56,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.model.RectangularBounds;
+import com.google.android.libraries.places.api.model.TypeFilter;
 import com.google.android.libraries.places.api.net.FetchPlaceRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
@@ -115,10 +117,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment)
-                getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
-        autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME));
         FirebaseFirestore db = FirebaseFirestore.getInstance();
+        Places.initialize(getApplicationContext(),"AIzaSyAkN5S8_mhBiljsTKC7LuvT_eCt1Z8DQFI");
+        PlacesClient placesClient = Places.createClient(this);
+        AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment)
+        getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
+
+
+
+        autocompleteFragment.setLocationBias(RectangularBounds.newInstance(
+                new LatLng(41.07670157862302, 23.554400400271827),
+                new LatLng(41.091226420839696, 23.54935511484131)));
+        autocompleteFragment.setCountries("GR");
+
+        autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME));
         auth = FirebaseAuth.getInstance();
         user = FirebaseAuth.getInstance().getCurrentUser();
         User user1 = new User();
@@ -154,24 +166,35 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
 
-        TextView greetingTextView = navigationView.findViewById(R.id.emailAddress);
-
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
-            public void onPlaceSelected(@NonNull Place place) {
-                // TODO: Get info about the selected place.
-                Log.i(TAG, "Place: " + place.getName() + ", " + place.getId());
-            }
+            public void onPlaceSelected(Place place) {
+                // Get the details of the selected place.
+                LatLng location = place.getLatLng();
+                String placeName = place.getName();
 
+                // Add a marker to the map.
+                Marker marker = myMap.addMarker(new MarkerOptions().position(location).title(placeName));
+
+                // Move the camera to the selected location.
+                myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15));
+
+                // Optional: You can show a toast message with the selected place details.
+                Toast.makeText(MainActivity.this, "Selected Place: " + placeName, Toast.LENGTH_SHORT).show();
+            }
 
             @Override
-            public void onError(@NonNull Status status) {
-                // TODO: Handle the error.
-                Log.i(TAG, "An error occurred: " + status);
+            public void onError(Status status) {
+                // Handle the error.
+                Toast.makeText(MainActivity.this, "Error: " + status.getStatusMessage(), Toast.LENGTH_SHORT).show();
             }
         });
-
     }
+
+
+
+
+
 
 
 
