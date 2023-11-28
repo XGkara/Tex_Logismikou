@@ -14,6 +14,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -133,7 +134,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 new LatLng(41.091226420839696, 23.54935511484131)));
         autocompleteFragment.setCountries("GR");
 
-        autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME));
+        autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG ));
         auth = FirebaseAuth.getInstance();
         user = FirebaseAuth.getInstance().getCurrentUser();
         User user1 = new User();
@@ -144,6 +145,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             startActivity(intent);
             finish();
         }
+
 
 
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -193,49 +195,36 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
             @Override
-            public void onPlaceSelected(Place place) {
-                String placeName = place.getName();
-                if (place != null) {
-                    LatLngBounds bounds = place.getViewport();
-                    if (bounds != null) {
-                        LatLng location = getCenterLatLng(bounds);
-                        if (location != null) {
-                            // Your existing code for geocoding and adding a marker goes here
-                            Geocoder geocoder = new Geocoder(MainActivity.this);
-                            try {
-                                addressList = geocoder.getFromLocationName(placeName, 1);
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
+            public void onPlaceSelected(@NonNull Place place) {
+                // Construct a message with detailed place information
+                StringBuilder placeInfo = new StringBuilder();
+                placeInfo.append("Place Name: ").append(place.getName()).append("\n");
+                placeInfo.append("Place ID: ").append(place.getId()).append("\n");
 
+                // Check if LatLng is not null before using it
+                if (place.getLatLng() != null) {
+                    placeInfo.append("Place LatLng: ").append(place.getLatLng()).append("\n");
 
-                            // Move the camera to the selected location.
-                            myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15));
+                    // Move the map camera to the selected place
+                    myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), 17.0f));
 
-                            // Optional: You can show a toast message with the selected place details.
-                            Toast.makeText(MainActivity.this, "Selected Place: " + placeName, Toast.LENGTH_SHORT).show();
-                        } else {
-                            Toast.makeText(MainActivity.this, "Location is null", Toast.LENGTH_SHORT).show();
-                        }
-                    } else {
-                        // Handle the case where bounds is null
-                        // You might want to use place's latitude and longitude directly in this case
-                        LatLng location = place.getLatLng();
-                        if (location != null) {
-                            // Your existing code for geocoding and adding a marker goes here
-
-                            // Move the camera to the selected location.
-                            myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15));
-
-                            // Optional: You can show a toast message with the selected place details.
-                            Toast.makeText(MainActivity.this, "Selected Place: " + placeName, Toast.LENGTH_SHORT).show();
-                        } else {
-                            Toast.makeText(MainActivity.this, "Location is null", Toast.LENGTH_SHORT).show();
-                        }
-                    }
+                    // Add a marker at the selected place
+                    myMap.addMarker(new MarkerOptions().position(place.getLatLng()).title(place.getName()));
                 } else {
-                    Toast.makeText(MainActivity.this, "Place is null", Toast.LENGTH_SHORT).show();
+                    placeInfo.append("Place LatLng is null").append("\n");
                 }
+
+                // Check for additional details
+                if (place.getWebsiteUri() != null) {
+                    placeInfo.append("Website: ").append(place.getWebsiteUri()).append("\n");
+                }
+
+                if (place.getOpeningHours() != null) {
+                    placeInfo.append("Opening Hours: ").append(place.getOpeningHours().getWeekdayText()).append("\n");
+                }
+
+                // Show the information in a Dialog
+                showPlaceDetailsDialog(placeInfo.toString());
             }
 
             @Override
@@ -247,15 +236,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
-    private LatLng getCenterLatLng(LatLngBounds bounds) {
-        double centerLat = (bounds.northeast.latitude + bounds.southwest.latitude) / 2;
-        double centerLng = (bounds.northeast.longitude + bounds.southwest.longitude) / 2;
-        return new LatLng(centerLat, centerLng);
+    private void showPlaceDetailsDialog(String placeDetails) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Place Details")
+                .setMessage(placeDetails)
+                .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+                .show();
     }
+
 
 
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
+
+
 
 
         myMap = googleMap;
