@@ -46,6 +46,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -73,6 +74,10 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.maps.DirectionsApiRequest;
+import com.google.maps.GeoApiContext;
+import com.google.maps.PendingResult;
+import com.google.maps.model.DirectionsResult;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -108,7 +113,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private String userID;
 
     private DrawerLayout drawerLayout;
-
+    private GeoApiContext mGeoApiContext = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -155,8 +160,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         TextView greetingTextView = navigationView.findViewById(R.id.emailAddress);
 
     }
-
-
 
 
     private void getLastLocation() {
@@ -245,14 +248,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == FINE_PERMISSION_CODE) {
-            if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 getLastLocation();
-            }else {
+            } else {
                 Toast.makeText(this, "Location permission is denied, please allow the permission", Toast.LENGTH_SHORT).show();
             }
         }
@@ -264,26 +266,68 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (item.getItemId() == R.id.nav_home) {
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new HomeFragment()).commit();
         } else if (item.getItemId() == R.id.nav_logout) {
-                FirebaseAuth.getInstance().signOut();
-                Intent intent = new Intent(getApplicationContext(), Login.class);
-                startActivity(intent);
-                finish();
+            FirebaseAuth.getInstance().signOut();
+            Intent intent = new Intent(getApplicationContext(), Login.class);
+            startActivity(intent);
+            finish();
         }
 
         drawerLayout.closeDrawer(GravityCompat.START);
         return true;
     }
 
-    private BitmapDescriptor bitmapDescriptor(Context context, int vectorResId){
-        Drawable vectorDrawable= ContextCompat.getDrawable(context,vectorResId);
-        vectorDrawable.setBounds(0,0, vectorDrawable.getIntrinsicWidth(),vectorDrawable.getIntrinsicHeight());
-        Bitmap bitmap=Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(),
-                vectorDrawable.getIntrinsicHeight(),Bitmap.Config.ARGB_8888);
-        Canvas canvas=new Canvas(bitmap);
+    private BitmapDescriptor bitmapDescriptor(Context context, int vectorResId) {
+        Drawable vectorDrawable = ContextCompat.getDrawable(context, vectorResId);
+        vectorDrawable.setBounds(0, 0, vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight());
+        Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(),
+                vectorDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
         vectorDrawable.draw(canvas);
         return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
 
+    private void initGoogleMap(Bundle savedInstanceState) {
+
+        if (mGeoApiContext == null) {
+            mGeoApiContext = new GeoApiContext.Builder()
+                    .apiKey(getString(R.string.my_map_api_key))
+                    .build();
+        }
+    }
+
+    private void calculateDirections(Marker marker){
+        Log.d(TAG, "calculateDirections: calculating directions.");
+
+        com.google.maps.model.LatLng destination = new com.google.maps.model.LatLng(
+                marker.getPosition().latitude,
+                marker.getPosition().longitude
+        );
+        DirectionsApiRequest directions = new DirectionsApiRequest(mGeoApiContext);
+
+        directions.alternatives(true);
+        directions.origin(
+                new com.google.maps.model.LatLng(
+                        currentLocation.getLatitude(),
+                        currentLocation.getLongitude()
+                )
+        );
+        Log.d(TAG, "calculateDirections: destination: " + destination.toString());
+        directions.destination(destination).setCallback(new PendingResult.Callback<DirectionsResult>() {
+            @Override
+            public void onResult(DirectionsResult result) {
+                Log.d(TAG, "calculateDirections: routes: " + result.routes[0].toString());
+                Log.d(TAG, "calculateDirections: duration: " + result.routes[0].legs[0].duration);
+                Log.d(TAG, "calculateDirections: distance: " + result.routes[0].legs[0].distance);
+                Log.d(TAG, "calculateDirections: geocodedWayPoints: " + result.geocodedWaypoints[0].toString());
+            }
+
+            @Override
+            public void onFailure(Throwable e) {
+                Log.e(TAG, "calculateDirections: Failed to get directions: " + e.getMessage() );
+
+            }
+        });
+    }
 }
 
 

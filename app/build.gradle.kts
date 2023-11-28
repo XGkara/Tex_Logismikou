@@ -48,4 +48,7 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     implementation("com.google.android.gms:play-services-maps:18.2.0")
     implementation("com.google.android.gms:play-services-location:21.0.1")
+    //google directions
+    implementation ("com.google.maps:google-maps-services:2.2.0")
+    implementation ("org.slf4j:slf4j-simple:1.7.25")
 }
