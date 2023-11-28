@@ -14,8 +14,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <fragment
-            android:id="@+id/fragment"
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/autocomplete_fragment"
             android:name="com.google.android.libraries.places.widget.AutocompleteSupportFragment"
             android:layout_width="318dp"
             android:layout_height="38dp"
@@ -43,20 +43,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0.5" />
 
-        <SearchView
-            android:id="@+id/SearchView"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:layout_margin="10dp"
-            android:layout_marginTop="5dp"
-            android:background="@drawable/bg_search_view"
-            android:elevation="5dp"
-            android:iconifiedByDefault="false"
-            android:queryHint="Search..."
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+
 
         <androidx.appcompat.widget.Toolbar
             android:layout_width="match_parent"
@@ -67,13 +54,14 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
+            app:layout_constraintTop_toTopOf="parent"
+            android:background="@color/blue"/>
 
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/fragment_container">
-            
+
 
 
             <androidx.fragment.app.FragmentContainerView
@@ -87,6 +75,7 @@
         </FrameLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
 
     <com.google.android.material.navigation.NavigationView
         android:layout_width="wrap_content"

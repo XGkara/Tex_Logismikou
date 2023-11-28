@@ -46,6 +46,8 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -55,6 +57,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.model.RectangularBounds;
+import com.google.android.libraries.places.api.model.TypeFilter;
 import com.google.android.libraries.places.api.net.FetchPlaceRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
@@ -87,11 +90,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private final static int LOCATION_REQUEST_CODE = 23;
 
     final String placeId = "ChIJgUbEo8cfqokR5lP9_Wh_DaM";
+    final List placeFields = Arrays.asList(Place.Field.NAME, Place.Field.RATING, Place.Field.OPENING_HOURS);
 
-    final List<Place.Field> placeFields = Arrays.asList(Place.Field.ID, Place.Field.NAME);
+    
 
     // Construct a request object, passing the place ID and fields array.
 
+
+    private LocationHelper locationHelper;
 
     private final int FINE_PERMISSION_CODE = 1;
     private GoogleMap myMap;
@@ -116,7 +122,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        mapSearchView = findViewById(R.id.SearchView);
+        Places.initialize(getApplicationContext(), "AIzaSyAkN5S8_mhBiljsTKC7LuvT_eCt1Z8DQFI");
+        PlacesClient placesClient = Places.createClient(this);
+        AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment)
+                getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
+
+
+        autocompleteFragment.setLocationBias(RectangularBounds.newInstance(
+                new LatLng(41.07670157862302, 23.554400400271827),
+                new LatLng(41.091226420839696, 23.54935511484131)));
+        autocompleteFragment.setCountries("GR");
+
+        autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME));
         auth = FirebaseAuth.getInstance();
         user = FirebaseAuth.getInstance().getCurrentUser();
         User user1 = new User();
@@ -128,9 +145,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             finish();
         }
 
-
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-        getLastLocation();
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -152,68 +166,98 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
 
-        TextView greetingTextView = navigationView.findViewById(R.id.emailAddress);
+        // Initialize LocationHelper in the onCreate method
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
-    }
+        // Initialize LocationHelper in the onCreate method
+        locationHelper = new LocationHelper(this, fusedLocationProviderClient);
 
-
-
-
-    private void getLastLocation() {
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, FINE_PERMISSION_CODE);
-            return;
-        }
-        Task<Location> task = fusedLocationProviderClient.getLastLocation();
-        task.addOnSuccessListener(new OnSuccessListener<Location>() {
+        // Call getLastLocation from LocationHelper
+        locationHelper.getLastLocation(new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
                 if (location != null) {
                     currentLocation = location;
                     SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
                     mapFragment.getMapAsync(MainActivity.this);
-
                 }
             }
         });
-        mapSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+
+
+
+
+        autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+
+            List<Address> addressList = null;
+
+
             @Override
-            public boolean onQueryTextSubmit(String query) {
+            public void onPlaceSelected(Place place) {
+                String placeName = place.getName();
+                if (place != null) {
+                    LatLngBounds bounds = place.getViewport();
+                    if (bounds != null) {
+                        LatLng location = getCenterLatLng(bounds);
+                        if (location != null) {
+                            // Your existing code for geocoding and adding a marker goes here
+                            Geocoder geocoder = new Geocoder(MainActivity.this);
+                            try {
+                                addressList = geocoder.getFromLocationName(placeName, 1);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
 
-                String location = mapSearchView.getQuery().toString();
-                List<Address> addressList = null;
 
-                if (location != null) {
-                    Geocoder geocoder = new Geocoder(MainActivity.this);
+                            // Move the camera to the selected location.
+                            myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15));
 
-                    try {
-                        addressList = geocoder.getFromLocationName(location, 1);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
+                            // Optional: You can show a toast message with the selected place details.
+                            Toast.makeText(MainActivity.this, "Selected Place: " + placeName, Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(MainActivity.this, "Location is null", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        // Handle the case where bounds is null
+                        // You might want to use place's latitude and longitude directly in this case
+                        LatLng location = place.getLatLng();
+                        if (location != null) {
+                            // Your existing code for geocoding and adding a marker goes here
+
+                            // Move the camera to the selected location.
+                            myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15));
+
+                            // Optional: You can show a toast message with the selected place details.
+                            Toast.makeText(MainActivity.this, "Selected Place: " + placeName, Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(MainActivity.this, "Location is null", Toast.LENGTH_SHORT).show();
+                        }
                     }
-
-                    Address address = addressList.get(0);
-                    LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
-                    myMap.addMarker(new MarkerOptions().position(latLng).title(location));
-                    myMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 10));
+                } else {
+                    Toast.makeText(MainActivity.this, "Place is null", Toast.LENGTH_SHORT).show();
                 }
-                return false;
             }
 
             @Override
-            public boolean onQueryTextChange(String newText) {
-                return false;
+            public void onError(Status status) {
+                // Handle the error.
+                Toast.makeText(MainActivity.this, "Error: " + status.getStatusMessage(), Toast.LENGTH_SHORT).show();
             }
-
-
         });
 
+    }
 
+    private LatLng getCenterLatLng(LatLngBounds bounds) {
+        double centerLat = (bounds.northeast.latitude + bounds.southwest.latitude) / 2;
+        double centerLng = (bounds.northeast.longitude + bounds.southwest.longitude) / 2;
+        return new LatLng(centerLat, centerLng);
     }
 
 
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
+
+
         myMap = googleMap;
 
         if (currentLocation != null) {
@@ -246,17 +290,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == FINE_PERMISSION_CODE) {
-            if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                getLastLocation();
-            }else {
-                Toast.makeText(this, "Location permission is denied, please allow the permission", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
+
 
 
     @Override
@@ -284,7 +318,30 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == FINE_PERMISSION_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Call getLastLocation from LocationHelper
+                locationHelper.getLastLocation(new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        if (location != null) {
+                            currentLocation = location;
+                            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+                            mapFragment.getMapAsync(MainActivity.this);
+                        }
+                    }
+                });
+            } else {
+                Toast.makeText(this, "Location permission is denied, please allow the permission", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
 }
+
+
 
 
 
