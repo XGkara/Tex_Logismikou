@@ -112,6 +112,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     FirebaseAuth auth;
     FirebaseUser user;
 
+    String asdfg;
     private DatabaseReference reference;
     private String userID;
 
@@ -137,7 +138,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG ));
         auth = FirebaseAuth.getInstance();
         user = FirebaseAuth.getInstance().getCurrentUser();
-        User user1 = new User();
+
         reference = FirebaseDatabase.getInstance().getReference();
         userID = user.getUid();
         if (user == null) {
@@ -185,6 +186,26 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             }
         });
+
+
+        User user = new User(
+
+        );
+        CollectionReference userRef = db.collection("users");
+
+        String documentId = userRef.document().getId();
+
+        userRef.document(documentId).set(user);
+
+        asdfg = user.getEmail();
+
+
+
+        TextView greetingTextView = findViewById(R.id.testText);
+
+        greetingTextView.setText("Welcome, " + asdfg);
+
+
 
 
 
@@ -238,7 +259,32 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
+
+
     }
+
+
+    private void getUser (User user){
+        CollectionReference userRef = db.collection("users");
+
+        String documentId = userRef.document().getId();
+
+        User user1 = new User(
+                user.getEmail(),
+                user.getPassword()
+        );
+
+        userRef.document(documentId).set(user1);
+
+
+
+
+
+
+    }
+
+
+
 
     private void addPlaceToFirestore(Place place) {
         // Create a reference to the "places" collection
