@@ -72,6 +72,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -116,13 +117,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private DrawerLayout drawerLayout;
 
-
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
         Places.initialize(getApplicationContext(), "AIzaSyAkN5S8_mhBiljsTKC7LuvT_eCt1Z8DQFI");
         PlacesClient placesClient = Places.createClient(this);
         AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment)
@@ -196,7 +196,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             @Override
             public void onPlaceSelected(@NonNull Place place) {
-                // Construct a message with detailed place information
+
                 StringBuilder placeInfo = new StringBuilder();
                 placeInfo.append("Place Name: ").append(place.getName()).append("\n");
                 placeInfo.append("Place ID: ").append(place.getId()).append("\n");
@@ -210,6 +210,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                     // Add a marker at the selected place
                     myMap.addMarker(new MarkerOptions().position(place.getLatLng()).title(place.getName()));
+
+                    // Add the place information to Firestore
+                    addPlaceToFirestore(place);
                 } else {
                     placeInfo.append("Place LatLng is null").append("\n");
                 }
@@ -225,6 +228,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 // Show the information in a Dialog
                 showPlaceDetailsDialog(placeInfo.toString());
+
             }
 
             @Override
@@ -235,6 +239,26 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
 
     }
+
+    private void addPlaceToFirestore(Place place) {
+        // Create a reference to the "places" collection
+        CollectionReference placesRef = db.collection("places");
+
+        // Create a document with a unique ID
+        String documentId = placesRef.document().getId();
+
+        // Create a Place object with the required information
+        PlaceData placeData = new PlaceData(
+                place.getId(),
+                place.getName(),
+                place.getLatLng().latitude,
+                place.getLatLng().longitude
+        );
+
+        // Add the place data to Firestore
+        placesRef.document(documentId).set(placeData);
+    }
+
 
     private void showPlaceDetailsDialog(String placeDetails) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
