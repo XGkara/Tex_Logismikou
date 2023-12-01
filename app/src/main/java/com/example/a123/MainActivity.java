@@ -85,6 +85,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.example.a123.User;
 
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, NavigationView.OnNavigationItemSelectedListener {
@@ -101,6 +102,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private LocationHelper locationHelper;
 
+    private TextView testText;
+
     private final int FINE_PERMISSION_CODE = 1;
     private GoogleMap myMap;
     private SearchView mapSearchView;
@@ -112,7 +115,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     FirebaseAuth auth;
     FirebaseUser user;
 
+
     String asdfg;
+
+    private User user1 = new User();
+
     private DatabaseReference reference;
     private String userID;
 
@@ -124,6 +131,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        testText = findViewById(R.id.testText);
         Places.initialize(getApplicationContext(), "AIzaSyAkN5S8_mhBiljsTKC7LuvT_eCt1Z8DQFI");
         PlacesClient placesClient = Places.createClient(this);
         AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment)
@@ -139,6 +147,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         auth = FirebaseAuth.getInstance();
         user = FirebaseAuth.getInstance().getCurrentUser();
 
+
+        FirebaseUser currentUser = auth.getCurrentUser();
+
+
+
         reference = FirebaseDatabase.getInstance().getReference();
         userID = user.getUid();
         if (user == null) {
@@ -146,6 +159,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             startActivity(intent);
             finish();
         }
+
 
 
 
@@ -210,6 +224,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
 
+
+
+
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
 
             List<Address> addressList = null;
@@ -260,28 +277,22 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
 
 
-
-    }
-
-
-    private void getUser (User user){
-        CollectionReference userRef = db.collection("users");
-
-        String documentId = userRef.document().getId();
-
-        User user1 = new User(
-                user.getEmail(),
-                user.getPassword()
-        );
-
-        userRef.document(documentId).set(user1);
-
-
-
-
+        if (currentUser != null) {
+            // If the user is authenticated, fetch additional data from Firestore
+            String userId = currentUser.getUid();
+            user1.fetchUserData(userId, new User.UserDataCallback() {
+                @Override
+                public void onUserDataFetched(String userId, String email, String password) {
+                    // Display data in TextView
+                    testText.setText("ID: " + userId + "\nEmail: " + email + "\nPassword: " + password);
+                }
+            });
+        }
 
 
     }
+
+
 
 
 
