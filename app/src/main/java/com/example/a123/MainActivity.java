@@ -194,6 +194,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                     // Add the place information to Firestore
                     addPlaceToFirestore(place);
+
+                    if (currentLocation != null) {
+                        start = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+                        end = place.getLatLng();
+                        Findroutes(start, end);
+                    }
                 } else {
                     placeInfo.append("Place LatLng is null").append("\n");
                 }
@@ -209,6 +215,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 // Show the information in a Dialog
                 showPlaceDetailsDialog(placeInfo.toString());
+
+
 
             }
 
@@ -280,6 +288,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 start=new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
                 //start route finding
                 Findroutes(start,end);
+
+                //calculate distance
+                float[] results = new float[1];
+                Location.distanceBetween(
+                        currentLocation.getLatitude(),
+                        currentLocation.getLongitude(),
+                        end.latitude,
+                        end.longitude,
+                        results);
+
+                Toast.makeText(MainActivity.this, "Distance: " + results[0] + " meters", Toast.LENGTH_SHORT).show();
             }
         });
 
