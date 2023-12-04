@@ -9,11 +9,12 @@ import android.view.View;
 import android.view.ViewGroup;
 
 
-public class HistoryFragment extends Fragment {
+public class AboutUsFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.activity_history, container, false);
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.activity_about_us, container, false);
     }
 }
