@@ -320,8 +320,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Intent intent = new Intent(getApplicationContext(), Login.class);
                 startActivity(intent);
                 finish();
+        } else if (item.getItemId() == R.id.nav_history) {
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new HistoryFragment()).commit();
         }
-
         drawerLayout.closeDrawer(GravityCompat.START);
         return true;
     }
