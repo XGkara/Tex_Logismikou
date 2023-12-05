@@ -95,7 +95,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private DatabaseReference reference;
     private String userID;
-
     private DrawerLayout drawerLayout;
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -415,12 +414,27 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (item.getItemId() == R.id.nav_home) {
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new HomeFragment()).commit();
         } else if (item.getItemId() == R.id.nav_logout) {
-            FirebaseAuth.getInstance().signOut();
-            Intent intent = new Intent(getApplicationContext(), Login.class);
+
+                FirebaseAuth.getInstance().signOut();
+                Intent intent = new Intent(getApplicationContext(), Login.class);
+                startActivity(intent);
+                finish();
+        } else if (item.getItemId() == R.id.nav_history) {
+            Intent intent = new Intent(getApplicationContext(), History.class);
             startActivity(intent);
             finish();
         }
+        else if (item.getItemId() == R.id.nav_settings) {
+            Intent intent = new Intent(getApplicationContext(), Settings.class);
+            startActivity(intent);
+            finish();
+        }
+        else if (item.getItemId() == R.id.nav_aboutus) {
+            Intent intent = new Intent(getApplicationContext(), AboutUs.class);
 
+            startActivity(intent);
+            finish();
+        }
         drawerLayout.closeDrawer(GravityCompat.START);
         return true;
     }

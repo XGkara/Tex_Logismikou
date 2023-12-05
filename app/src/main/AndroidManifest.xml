@@ -43,14 +43,27 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".Login"
             android:exported="true" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar">
         </activity>
+
+        <activity
+            android:name=".History"
+            android:exported="true"/>
+
+        <activity android:name="Settings"
+            android:exported="true"/>
+
+        <activity android:name="AboutUs"
+            android:exported="true"/>
+
     </application>
 
 </manifest>
