@@ -1,5 +1,14 @@
 package com.example.a123;
 
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+
+
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -11,7 +20,9 @@ import android.location.Address;
 import android.location.Location;
 import android.os.Bundle;
 import android.view.MenuItem;
+
 import android.view.View;
+
 import android.widget.SearchView;
 import android.widget.Toast;
 
@@ -29,10 +40,10 @@ import com.directions.route.RouteException;
 import com.directions.route.Routing;
 import com.directions.route.RoutingListener;
 import com.google.android.gms.common.ConnectionResult;
+
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -41,9 +52,10 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.android.gms.tasks.OnSuccessListener;
+
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.model.RectangularBounds;
@@ -58,6 +70,10 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
@@ -70,28 +86,25 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private final static int LOCATION_REQUEST_CODE = 23;
 
     final String placeId = "ChIJgUbEo8cfqokR5lP9_Wh_DaM";
-    final List placeFields = Arrays.asList(Place.Field.NAME, Place.Field.RATING, Place.Field.OPENING_HOURS);
-
-
-
-    // Construct a request object, passing the place ID and fields array.
-
 
     private LocationHelper locationHelper;
 
+    private TextView testText;
+
     private final int FINE_PERMISSION_CODE = 1;
     private GoogleMap myMap;
-    private SearchView mapSearchView;
-    Location currentLocation, destinationLocation = null;
-    protected LatLng start=null;
-    protected LatLng end=null;
-    private List<Polyline> polylines=null;
 
-    final FetchPlaceRequest request = FetchPlaceRequest.newInstance(placeId, placeFields);
+
+    Location currentLocation, destinationLocation = null;
 
     FusedLocationProviderClient fusedLocationProviderClient;
     FirebaseAuth auth;
     FirebaseUser user;
+
+
+
+
+    private User user1 = new User();
 
     private DatabaseReference reference;
     private String userID;
@@ -103,6 +116,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        testText = findViewById(R.id.testText);
         Places.initialize(getApplicationContext(), "AIzaSyAkN5S8_mhBiljsTKC7LuvT_eCt1Z8DQFI");
         PlacesClient placesClient = Places.createClient(this);
         AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment)
@@ -112,12 +126,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         autocompleteFragment.setLocationBias(RectangularBounds.newInstance(
                 new LatLng(41.07670157862302, 23.554400400271827),
                 new LatLng(41.091226420839696, 23.54935511484131)));
+
+
         autocompleteFragment.setCountries("GR");
 
-        autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG ));
+        autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG, Place.Field.OPENING_HOURS, Place.Field.WEBSITE_URI, Place.Field.ICON_URL, Place.Field.ICON_BACKGROUND_COLOR,Place.Field.PHONE_NUMBER, Place.Field.ADDRESS));
         auth = FirebaseAuth.getInstance();
         user = FirebaseAuth.getInstance().getCurrentUser();
-        User user1 = new User();
+
+        FirebaseUser currentUser = auth.getCurrentUser();
         reference = FirebaseDatabase.getInstance().getReference();
         userID = user.getUid();
         if (user == null) {
@@ -125,7 +142,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             startActivity(intent);
             finish();
         }
-
 
 
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -167,8 +183,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
 
 
-
-
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
 
             List<Address> addressList = null;
@@ -176,14 +190,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             @Override
             public void onPlaceSelected(@NonNull Place place) {
-
                 StringBuilder placeInfo = new StringBuilder();
-                placeInfo.append("Place Name: ").append(place.getName()).append("\n");
-                placeInfo.append("Place ID: ").append(place.getId()).append("\n");
+                placeInfo.append("Place Name: ").append(place.getName()).append("\n\n");
 
-                // Check if LatLng is not null before using it
                 if (place.getLatLng() != null) {
-                    placeInfo.append("Place LatLng: ").append(place.getLatLng()).append("\n");
+
 
                     // Move the map camera to the selected place
                     myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), 17.0f));
@@ -192,6 +203,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     myMap.addMarker(new MarkerOptions().position(place.getLatLng()).title(place.getName()));
 
                     // Add the place information to Firestore
+
                     addPlaceToFirestore(place);
 
                     if (currentLocation != null) {
@@ -201,23 +213,29 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
                 } else {
                     placeInfo.append("Place LatLng is null").append("\n");
+
                 }
 
                 // Check for additional details
-                if (place.getWebsiteUri() != null) {
-                    placeInfo.append("Website: ").append(place.getWebsiteUri()).append("\n");
+                if (place.getPhoneNumber() != null) {
+                    placeInfo.append("Phone Number: ").append(place.getPhoneNumber()).append("\n\n");
                 }
 
+                if (place.getAddress() != null) {
+                    placeInfo.append("Address: ").append(place.getAddress()).append("\n\n");
+                }
+
+
                 if (place.getOpeningHours() != null) {
-                    placeInfo.append("Opening Hours: ").append(place.getOpeningHours().getWeekdayText()).append("\n");
+                    placeInfo.append("Opening Hours: ").append(place.getOpeningHours().getWeekdayText()).append("\n\n");
                 }
 
                 // Show the information in a Dialog
                 showPlaceDetailsDialog(placeInfo.toString());
 
-
-
             }
+
+
 
             @Override
             public void onError(Status status) {
@@ -225,8 +243,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Toast.makeText(MainActivity.this, "Error: " + status.getStatusMessage(), Toast.LENGTH_SHORT).show();
             }
         });
-
     }
+
+
 
     private void addPlaceToFirestore(Place place) {
         // Create a reference to the "places" collection
