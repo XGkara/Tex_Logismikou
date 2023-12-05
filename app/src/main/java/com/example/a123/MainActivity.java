@@ -333,7 +333,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     .withListener(this)
                     .alternativeRoutes(true)
                     .waypoints(start, end)
-                    .key("AIzaSyA0dyufoJk88Wxjk57FIuSII4PLz6yejLI")  //also define your api key here.
+                    .key("AIzaSyAkN5S8_mhBiljsTKC7LuvT_eCt1Z8DQFI")  //also define your api key here.
                     .build();
             routing.execute();
         }
