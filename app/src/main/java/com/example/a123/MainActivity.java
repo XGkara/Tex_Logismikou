@@ -1,14 +1,5 @@
 package com.example.a123;
 
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
-import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
-
-
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -20,10 +11,9 @@ import android.location.Address;
 import android.location.Location;
 import android.os.Bundle;
 import android.view.MenuItem;
-
 import android.view.View;
-
 import android.widget.SearchView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -40,10 +30,10 @@ import com.directions.route.RouteException;
 import com.directions.route.Routing;
 import com.directions.route.RoutingListener;
 import com.google.android.gms.common.ConnectionResult;
-
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -52,10 +42,9 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.model.RectangularBounds;
@@ -70,10 +59,6 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-
-
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
@@ -86,28 +71,27 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private final static int LOCATION_REQUEST_CODE = 23;
 
     final String placeId = "ChIJgUbEo8cfqokR5lP9_Wh_DaM";
+    final List placeFields = Arrays.asList(Place.Field.NAME, Place.Field.RATING, Place.Field.OPENING_HOURS);
 
     private LocationHelper locationHelper;
-
-    private TextView testText;
 
     private final int FINE_PERMISSION_CODE = 1;
     private GoogleMap myMap;
 
-
     Location currentLocation, destinationLocation = null;
+    protected LatLng start=null;
+    protected LatLng end=null;
+    private List<Polyline> polylines=null;
+
+
 
     FusedLocationProviderClient fusedLocationProviderClient;
     FirebaseAuth auth;
     FirebaseUser user;
 
-
-
-
-    private User user1 = new User();
-
     private DatabaseReference reference;
     private String userID;
+
     private DrawerLayout drawerLayout;
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -116,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        testText = findViewById(R.id.testText);
+
         Places.initialize(getApplicationContext(), "AIzaSyAkN5S8_mhBiljsTKC7LuvT_eCt1Z8DQFI");
         PlacesClient placesClient = Places.createClient(this);
         AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment)
