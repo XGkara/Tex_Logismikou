@@ -12,8 +12,6 @@ import android.location.Location;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.SearchView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -48,7 +46,6 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.model.RectangularBounds;
-import com.google.android.libraries.places.api.net.FetchPlaceRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
@@ -95,6 +92,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private DrawerLayout drawerLayout;
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+    private void clearPolylines() {
+        if (polylines != null) {
+            for (Polyline line : polylines) {
+                line.remove();
+            }
+            polylines.clear();
+        }
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -191,6 +197,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     addPlaceToFirestore(place);
 
                     if (currentLocation != null) {
+                        clearPolylines();
                         start = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
                         end = place.getLatLng();
                         Findroutes(start, end);
