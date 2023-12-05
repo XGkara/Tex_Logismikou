@@ -62,30 +62,22 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private final static int LOCATION_REQUEST_CODE = 23;
 
     final String placeId = "ChIJgUbEo8cfqokR5lP9_Wh_DaM";
-    final List placeFields = Arrays.asList(Place.Field.NAME, Place.Field.RATING, Place.Field.OPENING_HOURS);
-
-    
-
-    // Construct a request object, passing the place ID and fields array.
-
-
+   
     private LocationHelper locationHelper;
 
     private TextView testText;
 
     private final int FINE_PERMISSION_CODE = 1;
     private GoogleMap myMap;
-    private SearchView mapSearchView;
-    Location currentLocation, destinationLocation = null;
 
-    final FetchPlaceRequest request = FetchPlaceRequest.newInstance(placeId, placeFields);
+    Location currentLocation, destinationLocation = null;
 
     FusedLocationProviderClient fusedLocationProviderClient;
     FirebaseAuth auth;
     FirebaseUser user;
 
 
-    String asdfg;
+
 
     private User user1 = new User();
 
@@ -118,11 +110,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         auth = FirebaseAuth.getInstance();
         user = FirebaseAuth.getInstance().getCurrentUser();
 
-
         FirebaseUser currentUser = auth.getCurrentUser();
-
-
-
         reference = FirebaseDatabase.getInstance().getReference();
         userID = user.getUid();
         if (user == null) {
@@ -130,8 +118,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             startActivity(intent);
             finish();
         }
-
-
 
 
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -171,33 +157,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             }
         });
-
-
-
-
-        User user = new User(
-
-        );
-        CollectionReference userRef = db.collection("users");
-
-        String documentId = userRef.document().getId();
-
-        userRef.document(documentId).set(user);
-
-        asdfg = user.getEmail();
-
-
-
-        TextView greetingTextView = findViewById(R.id.testText);
-
-        greetingTextView.setText("Welcome, " + asdfg);
-
-
-
-
-
-
-
 
 
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
@@ -251,32 +210,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Toast.makeText(MainActivity.this, "Error: " + status.getStatusMessage(), Toast.LENGTH_SHORT).show();
             }
         });
-
-
-
-
-
-        if (currentUser != null) {
-            // If the user is authenticated, fetch additional data from Firestore
-            String userId = currentUser.getUid();
-            user1.fetchUserData(userId, new User.UserDataCallback() {
-                @Override
-                public void onUserDataFetched(String userId, String email, String password) {
-                    // Display data in TextView
-                    testText.setText("ID: " + userId + "\nEmail: " + email + "\nPassword: " + password);
-                }
-            });
-        }
-
-
-
-
     }
-
-    
-
-
-
 
 
 
