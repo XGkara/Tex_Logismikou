@@ -1,11 +1,13 @@
 package com.example.a123;
 
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -18,11 +20,26 @@ import android.location.Address;
 import android.location.Location;
 import android.os.Bundle;
 import android.view.MenuItem;
-import android.widget.SearchView;
-import android.widget.TextView;
-import android.widget.Toast;
-import androidx.appcompat.widget.Toolbar;
 
+import android.view.View;
+
+import android.widget.SearchView;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+
+import com.directions.route.AbstractRouting;
+import com.directions.route.Route;
+import com.directions.route.RouteException;
+import com.directions.route.Routing;
+import com.directions.route.RoutingListener;
+import com.google.android.gms.common.ConnectionResult;
 
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -35,8 +52,10 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
+
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.model.RectangularBounds;
@@ -45,6 +64,7 @@ import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -53,22 +73,27 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, NavigationView.OnNavigationItemSelectedListener, RoutingListener {
 
     private final static int LOCATION_REQUEST_CODE = 23;
 
     final String placeId = "ChIJgUbEo8cfqokR5lP9_Wh_DaM";
-   
+
     private LocationHelper locationHelper;
 
     private TextView testText;
 
     private final int FINE_PERMISSION_CODE = 1;
     private GoogleMap myMap;
+
 
     Location currentLocation, destinationLocation = null;
 
@@ -83,7 +108,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private DatabaseReference reference;
     private String userID;
-
     private DrawerLayout drawerLayout;
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -180,6 +204,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                     // Add the place information to Firestore
 
+                    addPlaceToFirestore(place);
+
+                    if (currentLocation != null) {
+                        start = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+                        end = place.getLatLng();
+                        Findroutes(start, end);
+                    }
+                } else {
+                    placeInfo.append("Place LatLng is null").append("\n");
+
                 }
 
                 // Check for additional details
@@ -199,7 +233,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 // Show the information in a Dialog
                 showPlaceDetailsDialog(placeInfo.toString());
 
-                addPlaceToFirestore(place);
             }
 
 
@@ -262,6 +295,31 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         }
 
+        myMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+
+                end=latLng;
+
+                myMap.clear();
+
+                start=new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
+                //start route finding
+                Findroutes(start,end);
+
+                //calculate distance
+                float[] results = new float[1];
+                Location.distanceBetween(
+                        currentLocation.getLatitude(),
+                        currentLocation.getLongitude(),
+                        end.latitude,
+                        end.longitude,
+                        results);
+
+                Toast.makeText(MainActivity.this, "Distance: " + results[0] + " meters", Toast.LENGTH_SHORT).show();
+            }
+        });
+
         LatLng serres = new LatLng(41.07670157862302, 23.554400400271827);
         myMap.addMarker(new MarkerOptions().position(serres).title("serres")
                 .icon(bitmapDescriptor(getApplicationContext(), R.drawable.pin)));
@@ -280,7 +338,92 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
+    private void Findroutes(LatLng start, LatLng end) {
 
+        if(start==null || end==null) {
+            Toast.makeText(MainActivity.this,"Unable to get location", Toast.LENGTH_LONG).show();
+        }
+        else
+        {
+
+            Routing routing = new Routing.Builder()
+                    .travelMode(AbstractRouting.TravelMode.DRIVING)
+                    .withListener(this)
+                    .alternativeRoutes(true)
+                    .waypoints(start, end)
+                    .key("AIzaSyAkN5S8_mhBiljsTKC7LuvT_eCt1Z8DQFI")  //also define your api key here.
+                    .build();
+            routing.execute();
+        }
+    }
+
+    public void onRoutingFailure(RouteException e) {
+        View parentLayout = findViewById(android.R.id.content);
+        Snackbar snackbar= Snackbar.make(parentLayout, e.toString(), Snackbar.LENGTH_LONG);
+        snackbar.show();
+//        Findroutes(start,end);
+    }
+
+    public void onRoutingStart() {
+        Toast.makeText(MainActivity.this,"Finding Route...",Toast.LENGTH_LONG).show();
+    }
+
+    public void onRoutingSuccess(ArrayList<Route> route, int shortestRouteIndex) {
+
+        CameraUpdate center = CameraUpdateFactory.newLatLng(start);
+        CameraUpdate zoom = CameraUpdateFactory.zoomTo(16);
+        if(polylines!=null) {
+            polylines.clear();
+        }
+        PolylineOptions polyOptions = new PolylineOptions();
+        LatLng polylineStartLatLng=null;
+        LatLng polylineEndLatLng=null;
+
+
+        polylines = new ArrayList<>();
+        //add route(s) to the map using polyline
+        for (int i = 0; i <route.size(); i++) {
+
+            if(i==shortestRouteIndex)
+            {
+                polyOptions.color(ContextCompat.getColor(this, R.color.colorPrimary));
+                polyOptions.width(7);
+                polyOptions.addAll(route.get(shortestRouteIndex).getPoints());
+                Polyline polyline = myMap.addPolyline(polyOptions);
+                polylineStartLatLng=polyline.getPoints().get(0);
+                int k=polyline.getPoints().size();
+                polylineEndLatLng=polyline.getPoints().get(k-1);
+                polylines.add(polyline);
+
+            }
+            else {
+
+            }
+
+        }
+
+        //Add Marker on route starting position
+        MarkerOptions startMarker = new MarkerOptions();
+        startMarker.position(polylineStartLatLng);
+        startMarker.title("My Location");
+        myMap.addMarker(startMarker);
+
+        //Add Marker on route ending position
+        MarkerOptions endMarker = new MarkerOptions();
+        endMarker.position(polylineEndLatLng);
+        endMarker.title("Destination");
+        myMap.addMarker(endMarker);
+    }
+
+    public void onRoutingCancelled() {
+
+        Findroutes(start,end);
+    }
+
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Findroutes(start,end);
+
+    }
 
 
 
@@ -290,12 +433,27 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (item.getItemId() == R.id.nav_home) {
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new HomeFragment()).commit();
         } else if (item.getItemId() == R.id.nav_logout) {
+
                 FirebaseAuth.getInstance().signOut();
                 Intent intent = new Intent(getApplicationContext(), Login.class);
                 startActivity(intent);
                 finish();
+        } else if (item.getItemId() == R.id.nav_history) {
+            Intent intent = new Intent(getApplicationContext(), History.class);
+            startActivity(intent);
+            finish();
         }
+        else if (item.getItemId() == R.id.nav_settings) {
+            Intent intent = new Intent(getApplicationContext(), Settings.class);
+            startActivity(intent);
+            finish();
+        }
+        else if (item.getItemId() == R.id.nav_aboutus) {
+            Intent intent = new Intent(getApplicationContext(), AboutUs.class);
 
+            startActivity(intent);
+            finish();
+        }
         drawerLayout.closeDrawer(GravityCompat.START);
         return true;
     }
@@ -332,8 +490,3 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 }
-
-
-
-
-
