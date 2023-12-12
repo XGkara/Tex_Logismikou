@@ -253,10 +253,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Create a reference to the "places" collection
         CollectionReference placesRef = db.collection("places");
 
+
         // Create a document with a unique ID
         String documentId = placesRef.document().getId();
 
         // Create a Place object with the required information
+
         PlaceData placeData = new PlaceData(
                 place.getId(),
                 place.getName(),
