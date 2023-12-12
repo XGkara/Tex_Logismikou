@@ -420,6 +420,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         View parentLayout = findViewById(android.R.id.content);
         Snackbar snackbar = Snackbar.make(parentLayout, "Απόσταση: " + formatDistance(totalDistance), Snackbar.LENGTH_LONG);
+        snackbar.setDuration(6000);
         snackbar.show();
     }
 
