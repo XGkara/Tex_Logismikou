@@ -1,7 +1,5 @@
 package com.example.a123;
 
-import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
-
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -12,7 +10,6 @@ import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Location;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -45,9 +42,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.model.RectangularBounds;
@@ -61,7 +56,6 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
@@ -318,7 +312,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         end.longitude,
                         results);
 
-                Toast.makeText(MainActivity.this, "Distance: " + results[0] + " meters", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Απόσταση: " + results[0] + " meters", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -367,11 +361,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void onRoutingStart() {
-        Toast.makeText(MainActivity.this,"Finding Route...",Toast.LENGTH_LONG).show();
+        Toast.makeText(MainActivity.this,"Εύρεση Διαδρομής...",Toast.LENGTH_LONG).show();
     }
 
     public void onRoutingSuccess(ArrayList<Route> route, int shortestRouteIndex) {
-
+        
+        myMap.clear();
         CameraUpdate center = CameraUpdateFactory.newLatLng(start);
         CameraUpdate zoom = CameraUpdateFactory.zoomTo(16);
         if(polylines!=null) {
@@ -380,6 +375,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         PolylineOptions polyOptions = new PolylineOptions();
         LatLng polylineStartLatLng=null;
         LatLng polylineEndLatLng=null;
+        float totalDistance = 0;
 
 
         polylines = new ArrayList<>();
@@ -391,11 +387,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 polyOptions.color(ContextCompat.getColor(this, R.color.colorPrimary));
                 polyOptions.width(7);
                 polyOptions.addAll(route.get(shortestRouteIndex).getPoints());
+
                 Polyline polyline = myMap.addPolyline(polyOptions);
                 polylineStartLatLng=polyline.getPoints().get(0);
                 int k=polyline.getPoints().size();
                 polylineEndLatLng=polyline.getPoints().get(k-1);
                 polylines.add(polyline);
+
+                //upologismos apostashs
+                totalDistance += route.get(shortestRouteIndex).getDistanceValue();
 
             }
             else {
@@ -415,8 +415,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         endMarker.position(polylineEndLatLng);
         endMarker.title("Destination");
         myMap.addMarker(endMarker);
+
+        View parentLayout = findViewById(android.R.id.content);
+        Snackbar snackbar = Snackbar.make(parentLayout, "Απόσταση: " + formatDistance(totalDistance), Snackbar.LENGTH_LONG);
+        snackbar.show();
     }
 
+    private String formatDistance(float distance) {
+        if (distance < 1000) {
+            return String.format("%.0f meters", distance);
+        } else {
+            return String.format("%.2f km", distance / 1000);
+        }
+    }
     public void onRoutingCancelled() {
 
         Findroutes(start,end);
