@@ -2,8 +2,10 @@ package com.example.a123;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -20,7 +22,8 @@ public class AboutUs extends AppCompatActivity implements NavigationView.OnNavig
 
     DrawerLayout drawerLayout;
 
-    private TextView navHeaderEmail, navHeaderPassword;
+    private TextView navHeaderEmail;
+    private ImageView navHeaderImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,9 +43,9 @@ public class AboutUs extends AppCompatActivity implements NavigationView.OnNavig
 
         navigationView.setNavigationItemSelectedListener(this);
 
-        // Access the TextViews directly from the nav_header
+        // Access the TextView and ImageView directly from the nav_header
         navHeaderEmail = navigationView.getHeaderView(0).findViewById(R.id.UserEmail);
-
+        navHeaderImage = navigationView.getHeaderView(0).findViewById(R.id.UserImage);
 
         updateNavHeader();
     }
@@ -50,12 +53,17 @@ public class AboutUs extends AppCompatActivity implements NavigationView.OnNavig
     private void updateNavHeader() {
         SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
         String storedEmail = prefs.getString("user_email", "");
-        String storedPassword = prefs.getString("user_password", "");
+        String storedImageUriString = prefs.getString("user_image", "");
 
-        // Update TextViews in nav_header
-        if (navHeaderEmail != null && navHeaderPassword != null) {
+        // Update TextView in nav_header
+        if (navHeaderEmail != null) {
             navHeaderEmail.setText(storedEmail);
-            navHeaderPassword.setText(storedPassword);
+        }
+
+        // Update ImageView in nav_header
+        if (navHeaderImage != null && storedImageUriString != null && !storedImageUriString.isEmpty()) {
+            Uri storedImageUri = Uri.parse(storedImageUriString);
+            navHeaderImage.setImageURI(storedImageUri);
         }
     }
     @Override
