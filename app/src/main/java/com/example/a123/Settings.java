@@ -3,6 +3,7 @@ package com.example.a123;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -14,6 +15,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -27,44 +29,45 @@ import java.io.IOException;
 
 public class Settings extends AppCompatActivity implements  NavigationView.OnNavigationItemSelectedListener {
 
-    DrawerLayout drawerLayout;
+    private static final int PICK_IMAGE_REQUEST = 1;
 
-    private EditText emailEditText, passwordEditText;
-    private Button saveButton;
     private ImageView uploadImageView;
-    private SharedPreferences sharedPreferences;
+    private EditText uploadEmailEditText;
+    private Button saveButton;
+    private NavigationView navigationView;
+    private View headerView;
+    private TextView userEmailTextView;
+    private ImageView userImageView;
     private Uri selectedImageUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
-        NavigationView navigationView = findViewById(R.id.nav_view);
 
-        sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
+        navigationView = findViewById(R.id.nav_view);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
-        // Find views by ID
-        emailEditText = findViewById(R.id.uploadEmail);
-        saveButton = findViewById(R.id.saveButton);
+        DrawerLayout drawerLayout = findViewById(R.id.drawer_layout3);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.open_nav,
+                R.string.close_nav);
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+
+
+        headerView = navigationView.getHeaderView(0);
+
+        userEmailTextView = headerView.findViewById(R.id.UserEmail);
+        userImageView = headerView.findViewById(R.id.UserImage);
+
         uploadImageView = findViewById(R.id.uploadImage);
+        uploadEmailEditText = findViewById(R.id.uploadEmail);
+        saveButton = findViewById(R.id.saveButton);
 
-        // Set click listener for the saveButton
-        saveButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // Get entered email and password
-                String enteredEmail = emailEditText.getText().toString();
-                String enteredPassword = passwordEditText.getText().toString();
+        loadUserData();
+        navigationView.setNavigationItemSelectedListener(this);
 
-                // Save the entered data in SharedPreferences
-                saveUserData(enteredEmail, enteredPassword);
-
-                // Update the nav_header with the entered email and password
-                updateNavHeader(enteredEmail, enteredPassword);
-            }
-        });
-
-        // Set click listener for the uploadImage
         uploadImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -72,59 +75,65 @@ public class Settings extends AppCompatActivity implements  NavigationView.OnNav
             }
         });
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        saveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String userEmail = uploadEmailEditText.getText().toString().trim();
+                userEmailTextView.setText(userEmail);
 
-        drawerLayout = findViewById(R.id.drawer_layout3);
+                saveUserData(userEmail, selectedImageUri);
 
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.open_nav,
-                R.string.close_nav);
-        drawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
+                if (selectedImageUri != null) {
+                    userImageView.setImageURI(selectedImageUri);
+                }
 
-        navigationView.setNavigationItemSelectedListener(this);
+                closeDrawer();
+            }
+        });
     }
 
     private void openImagePicker() {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("image/*");
-        startActivityForResult(intent, 1);
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(intent, PICK_IMAGE_REQUEST);
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1 && resultCode == RESULT_OK && data != null) {
+
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             selectedImageUri = data.getData();
-            try {
-                // Set the selected image to uploadImageView
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImageUri);
-                uploadImageView.setImageBitmap(bitmap);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            uploadImageView.setImageURI(selectedImageUri);
         }
     }
 
-    private void saveUserData(String email, String password) {
-        // Use SharedPreferences.Editor to save user data
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("user_email", email);
-        editor.putString("user_password", password);
-        // Save the image URI as a string
-        editor.putString("user_image", selectedImageUri.toString());
+    private void saveUserData(String userEmail, Uri imageUri) {
+        SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("user_email", userEmail);
+        editor.putString("user_image", imageUri != null ? imageUri.toString() : "");
         editor.apply();
     }
 
-    private void updateNavHeader(String email, String password) {
-        // Load TextViews and ImageView in nav_header by ID
-        TextView navHeaderEmail = findViewById(R.id.UserEmail);
-        ImageView navHeaderImage = findViewById(R.id.UserImage);
+    private void loadUserData() {
+        SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
+        String storedEmail = prefs.getString("user_email", "");
+        String storedImageUriString = prefs.getString("user_image", "");
 
-        // Update TextViews and ImageView in nav_header
-        navHeaderEmail.setText(email);
-        if (selectedImageUri != null) {
-            navHeaderImage.setImageURI(selectedImageUri);
+        if (userEmailTextView != null) {
+            userEmailTextView.setText(storedEmail);
+        }
+
+        if (userImageView != null && storedImageUriString != null && !storedImageUriString.isEmpty()) {
+            Uri storedImageUri = Uri.parse(storedImageUriString);
+            userImageView.setImageURI(storedImageUri);
+        }
+    }
+
+    private void closeDrawer() {
+        if (navigationView != null) {
+            DrawerLayout drawerLayout = findViewById(R.id.drawer_layout3);
+            drawerLayout.closeDrawer(GravityCompat.START);
         }
     }
 
@@ -156,11 +165,9 @@ public class Settings extends AppCompatActivity implements  NavigationView.OnNav
             startActivity(intent);
             finish();
         }
-        drawerLayout.closeDrawer(GravityCompat.START);
+
         return true;
     }
-    public void onUploadImageClick(View view) {
-        openImagePicker();
-    }
+
 }
 
