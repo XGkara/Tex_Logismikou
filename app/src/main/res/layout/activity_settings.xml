@@ -37,7 +37,9 @@
                 android:layout_gravity="center"
                 android:layout_marginTop="20dp"
                 android:scaleType="fitXY"
-                android:src="@drawable/baseline_tag_faces_24" />
+                android:src="@drawable/baseline_tag_faces_24"
+                android:clickable="true"
+                android:onClick="onUploadImageClick" />
 
             <EditText
                 android:id="@+id/uploadEmail"
@@ -50,16 +52,7 @@
                 android:padding="16dp"
                 android:textColor="@color/dark_blue" />
 
-            <EditText
-                android:id="@+id/uploadPassword"
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:layout_marginTop="20dp"
-                android:background="@drawable/text_border"
-                android:gravity="start|center_vertical"
-                android:hint="Enter new password"
-                android:padding="16dp"
-                android:textColor="@color/dark_blue" />
+
 
             <Button
                 android:id="@+id/saveButton"
