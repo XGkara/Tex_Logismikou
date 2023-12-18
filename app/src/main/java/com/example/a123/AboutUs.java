@@ -21,7 +21,6 @@ import com.google.firebase.auth.FirebaseAuth;
 public class AboutUs extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     DrawerLayout drawerLayout;
-
     private TextView navHeaderEmail;
     private ImageView navHeaderImage;
 
@@ -29,8 +28,8 @@ public class AboutUs extends AppCompatActivity implements NavigationView.OnNavig
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about_us);
-        NavigationView navigationView = findViewById(R.id.nav_view);
 
+        NavigationView navigationView = findViewById(R.id.nav_view);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -47,10 +46,11 @@ public class AboutUs extends AppCompatActivity implements NavigationView.OnNavig
         navHeaderEmail = navigationView.getHeaderView(0).findViewById(R.id.UserEmail);
         navHeaderImage = navigationView.getHeaderView(0).findViewById(R.id.UserImage);
 
-        updateNavHeader();
+        // Load user data and update the navigation header
+        loadUserData();
     }
 
-    private void updateNavHeader() {
+    private void loadUserData() {
         SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
         String storedEmail = prefs.getString("user_email", "");
         String storedImageUriString = prefs.getString("user_image", "");
@@ -66,6 +66,7 @@ public class AboutUs extends AppCompatActivity implements NavigationView.OnNavig
             navHeaderImage.setImageURI(storedImageUri);
         }
     }
+
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.nav_home) {
@@ -73,7 +74,6 @@ public class AboutUs extends AppCompatActivity implements NavigationView.OnNavig
             startActivity(intent);
             finish();
         } else if (item.getItemId() == R.id.nav_logout) {
-
             FirebaseAuth.getInstance().signOut();
             Intent intent = new Intent(getApplicationContext(), Login.class);
             startActivity(intent);
@@ -82,18 +82,16 @@ public class AboutUs extends AppCompatActivity implements NavigationView.OnNavig
             Intent intent = new Intent(getApplicationContext(), History.class);
             startActivity(intent);
             finish();
-        }
-        else if (item.getItemId() == R.id.nav_settings) {
+        } else if (item.getItemId() == R.id.nav_settings) {
             Intent intent = new Intent(getApplicationContext(), Settings.class);
             startActivity(intent);
             finish();
+        } else if (item.getItemId() == R.id.nav_aboutus) {
+            // No need to recreate the current activity
+            drawerLayout.closeDrawer(GravityCompat.START);
+            return true;
         }
-        else if (item.getItemId() == R.id.nav_aboutus) {
-            Intent intent = new Intent(getApplicationContext(), AboutUs.class);
 
-            startActivity(intent);
-            finish();
-        }
         drawerLayout.closeDrawer(GravityCompat.START);
         return true;
     }
