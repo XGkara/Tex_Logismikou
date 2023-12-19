@@ -28,9 +28,13 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+
 import android.widget.LinearLayout;
 import android.widget.SearchView;
 import android.widget.TextView;
+
+import android.widget.ImageView;
+
 import android.widget.Toast;
 import androidx.appcompat.widget.Toolbar;
 
@@ -101,6 +105,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private LocationHelper locationHelper;
 
+
+
     private final int FINE_PERMISSION_CODE = 1;
     private GoogleMap myMap;
     private SearchView mapSearchView;
@@ -119,6 +125,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
