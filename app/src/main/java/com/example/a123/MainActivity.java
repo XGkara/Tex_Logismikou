@@ -201,12 +201,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                     addPlaceToFirestore(place);
 
-                    if (currentLocation != null) {
-                        clearPolylines();
-                        start = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
-                        end = place.getLatLng();
-                        Findroutes(start, end);
-                    }
+
+
                 } else {
                     placeInfo.append("Place LatLng is null").append("\n");
 
@@ -227,9 +223,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
 
                 // Show the information in a Dialog
-                showPlaceDetailsDialog(placeInfo.toString());
+                showPlaceDetailsDialog(placeInfo.toString(), place);
 
             }
+
 
 
 
@@ -239,6 +236,25 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Toast.makeText(MainActivity.this, "Error: " + status.getStatusMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+
+
+
+    }
+
+    private void showPlaceDetailsDialog(String placeDetails, Place place) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Place Details")
+                .setMessage(placeDetails)
+                .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+                .setNegativeButton("Calculate Distance", (dialog, which) -> {
+                    if (place != null && place.getLatLng() != null && currentLocation != null) {
+                        clearPolylines();
+                        start = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+                        end = place.getLatLng();
+                        Findroutes(start, end);
+                    }
+                })
+                .show();
     }
 
 
@@ -265,13 +281,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
-    private void showPlaceDetailsDialog(String placeDetails) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Place Details")
-                .setMessage(placeDetails)
-                .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
-                .show();
-    }
+
 
 
 
