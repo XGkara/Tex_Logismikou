@@ -113,7 +113,7 @@ public class Signup extends AppCompatActivity {
                             public void onComplete(@NonNull Task<AuthResult> task) {
                                 progressBar.setVisibility(View.GONE);
 
-                                db.collection("test")
+                                db.collection("users")
                                         .add(user)
                                         .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                                             @Override

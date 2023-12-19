@@ -42,8 +42,11 @@ public class History extends AppCompatActivity implements NavigationView.OnNavig
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.nav_home) {
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new HomeFragment()).commit();
+            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+            startActivity(intent);
+            finish();
         } else if (item.getItemId() == R.id.nav_logout) {
+
             FirebaseAuth.getInstance().signOut();
             Intent intent = new Intent(getApplicationContext(), Login.class);
             startActivity(intent);
@@ -52,14 +55,13 @@ public class History extends AppCompatActivity implements NavigationView.OnNavig
             Intent intent = new Intent(getApplicationContext(), History.class);
             startActivity(intent);
             finish();
-        }
-        else if (item.getItemId() == R.id.nav_settings) {
+        } else if (item.getItemId() == R.id.nav_settings) {
             Intent intent = new Intent(getApplicationContext(), Settings.class);
             startActivity(intent);
             finish();
-        }
-        else if (item.getItemId() == R.id.nav_aboutus) {
+        } else if (item.getItemId() == R.id.nav_aboutus) {
             Intent intent = new Intent(getApplicationContext(), AboutUs.class);
+
             startActivity(intent);
             finish();
         }
