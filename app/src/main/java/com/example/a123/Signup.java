@@ -43,6 +43,9 @@ public class Signup extends AppCompatActivity {
 
     FirebaseDatabase database;
     DatabaseReference reference;
+    private DatabaseReference mDatabase;
+
+    String userID = "test";
 
 
     @Override
@@ -113,23 +116,21 @@ public class Signup extends AppCompatActivity {
     private void saveUserDataToDatabase() {
 
 
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference reference = database.getReference("Userss");
 
-        
+        mDatabase = FirebaseDatabase.getInstance().getReference();
 
         String email = editTextEmail.getText().toString();
         String password = editTextPassword.getText().toString();
-        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        Log.d(TAG, "Email: " + email);
-        Log.d(TAG, "Password: " + password);
-        Log.d(TAG, "UID: " + uid);
+        writeNewUser(userID,email,password);
 
 
+    }
 
-        reference.setValue(email);
+    public void writeNewUser(String userId, String password, String email) {
+        User user = new User(email, password);
 
+        mDatabase.child("users").child(userId).setValue(user);
     }
 
     private void showToast(String message) {
