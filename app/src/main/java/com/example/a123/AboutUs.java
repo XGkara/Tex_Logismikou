@@ -77,8 +77,8 @@ public class AboutUs extends AppCompatActivity implements NavigationView.OnNavig
             startActivity(intent);
             finish();
         }
-        else if (item.getItemId() == R.id.nav_settings) {
-            Intent intent = new Intent(getApplicationContext(), Settings.class);
+        else if (item.getItemId() == R.id.nav_favorites) {
+            Intent intent = new Intent(getApplicationContext(), Favorites.class);
             startActivity(intent);
             finish();
         }

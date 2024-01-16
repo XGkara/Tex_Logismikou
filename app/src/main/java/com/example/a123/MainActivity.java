@@ -12,10 +12,6 @@ import android.location.Location;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.LinearLayout;
-import android.widget.SearchView;
-import android.widget.TextView;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -50,7 +46,6 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.model.RectangularBounds;
-import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 import com.google.android.material.navigation.NavigationView;
@@ -111,29 +106,22 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         Places.initialize(getApplicationContext(), "AIzaSyAkN5S8_mhBiljsTKC7LuvT_eCt1Z8DQFI");
-        PlacesClient placesClient = Places.createClient(this);
         AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment)
                 getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
-
 
         autocompleteFragment.setLocationBias(RectangularBounds.newInstance(
                 new LatLng(41.07670157862302, 23.554400400271827),
                 new LatLng(41.091226420839696, 23.54935511484131)));
-
-
         autocompleteFragment.setCountries("GR");
 
         autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG, Place.Field.OPENING_HOURS, Place.Field.WEBSITE_URI, Place.Field.ICON_URL, Place.Field.ICON_BACKGROUND_COLOR,Place.Field.PHONE_NUMBER, Place.Field.ADDRESS));
         auth = FirebaseAuth.getInstance();
         user = FirebaseAuth.getInstance().getCurrentUser();
 
-        FirebaseUser currentUser = auth.getCurrentUser();
         reference = FirebaseDatabase.getInstance().getReference();
         userID = user.getUid();
         if (user == null) {
@@ -141,7 +129,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             startActivity(intent);
             finish();
         }
-
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -162,14 +149,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             navigationView.setCheckedItem(R.id.nav_home);
         }
 
-
-        // Initialize LocationHelper in the onCreate method
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
-        // Initialize LocationHelper in the onCreate method
         locationHelper = new LocationHelper(this, fusedLocationProviderClient);
 
-        // Call getLastLocation from LocationHelper
         locationHelper.getLastLocation(new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
@@ -181,14 +164,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
-
-
-
-
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
 
             List<Address> addressList = null;
-
 
             @Override
             public void onPlaceSelected(@NonNull Place place) {
@@ -197,25 +175,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 if (place.getLatLng() != null) {
 
-
-                    // Move the map camera to the selected place
                     myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), 17.0f));
 
-                    // Add a marker at the selected place
                     myMap.addMarker(new MarkerOptions().position(place.getLatLng()).title(place.getName()));
 
-                    // Add the place information to Firestore
-
                     addPlaceToFirestore(place);
-
-
 
                 } else {
                     placeInfo.append("Place LatLng is null").append("\n");
 
                 }
 
-                // Check for additional details
                 if (place.getPhoneNumber() != null) {
                     placeInfo.append("Phone Number: ").append(place.getPhoneNumber()).append("\n\n");
                 }
@@ -229,23 +199,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     placeInfo.append("Opening Hours: ").append(place.getOpeningHours().getWeekdayText()).append("\n\n");
                 }
 
-                // Show the information in a Dialog
                 showPlaceDetailsDialog(placeInfo.toString(), place);
-
             }
-
-
-
-
             @Override
             public void onError(Status status) {
                 // Handle the error.
                 Toast.makeText(MainActivity.this, "Error: " + status.getStatusMessage(), Toast.LENGTH_SHORT).show();
             }
         });
-
-
-
     }
 
     private void showPlaceDetailsDialog(String placeDetails, Place place) {
@@ -259,7 +220,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         showModeSelectionDialog(place);
                     }
                 })
-
+                .setNeutralButton("Add to Favorites", (dialog, which) -> {
+                    if (place != null) {
+                        addPlaceToFavorites(place);
+                        Toast.makeText(MainActivity.this, "Place added to Favorites", Toast.LENGTH_SHORT).show();
+                    }
+                })
                 .show();
     }
     private void showModeSelectionDialog(Place place) {
@@ -308,6 +274,36 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Add the place data to Firestore
         placesRef.document(documentId).set(placeData);
     }
+
+    private void addPlaceToFavorites(Place place) {
+
+        if (user != null) {
+            String userID = user.getUid();
+
+            // Create a reference to the "Favorites" collection
+            CollectionReference favoritesRef = db.collection("Favorites");
+
+            // Create a document with a unique ID
+            String documentId = favoritesRef.document().getId();
+
+            // Create a FavoritePlace object with the required information
+            PlaceData favoritePlace = new PlaceData(
+                    place.getId(),
+                    place.getName(),
+                    place.getLatLng().latitude,
+                    place.getLatLng().longitude
+            );
+
+            // Add the favorite place data to Firestore
+            favoritesRef.document(documentId).set(favoritePlace);
+        } else {
+            // Handle the case where the user is not authenticated
+            Toast.makeText(MainActivity.this, "User not authenticated", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+
 
 
 
@@ -500,8 +496,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             startActivity(intent);
             finish();
         }
-        else if (item.getItemId() == R.id.nav_settings) {
-            Intent intent = new Intent(getApplicationContext(), Settings.class);
+        else if (item.getItemId() == R.id.nav_favorites) {
+            Intent intent = new Intent(getApplicationContext(), Favorites.class);
             startActivity(intent);
             finish();
         }

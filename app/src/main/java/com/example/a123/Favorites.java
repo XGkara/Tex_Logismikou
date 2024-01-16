@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -26,7 +25,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
-public class History extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, PlaceAdapter.OnItemClickListener {
+public class Favorites extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, PlaceAdapter.OnItemClickListener {
 
     private static final String TAG = "History";
     private DrawerLayout drawerLayout;
@@ -58,7 +57,7 @@ public class History extends AppCompatActivity implements NavigationView.OnNavig
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(placeAdapter);
 
-        db.collection("places")
+        db.collection("Favorites")
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
@@ -84,8 +83,6 @@ public class History extends AppCompatActivity implements NavigationView.OnNavig
                 });
     }
 
-
-
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.nav_home) {
@@ -102,11 +99,13 @@ public class History extends AppCompatActivity implements NavigationView.OnNavig
             Intent intent = new Intent(getApplicationContext(), History.class);
             startActivity(intent);
             finish();
-        } else if (item.getItemId() == R.id.nav_favorites) {
+        }
+        else if (item.getItemId() == R.id.nav_favorites) {
             Intent intent = new Intent(getApplicationContext(), Favorites.class);
             startActivity(intent);
             finish();
-        } else if (item.getItemId() == R.id.nav_aboutus) {
+        }
+        else if (item.getItemId() == R.id.nav_aboutus) {
             Intent intent = new Intent(getApplicationContext(), AboutUs.class);
 
             startActivity(intent);
@@ -118,8 +117,6 @@ public class History extends AppCompatActivity implements NavigationView.OnNavig
 
     @Override
     public void onItemClick(String placeName) {
-
-        Toast.makeText(this, "Clicked on: " + placeName, Toast.LENGTH_SHORT).show();
 
     }
 }
