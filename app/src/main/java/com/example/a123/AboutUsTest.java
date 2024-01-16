@@ -58,7 +58,6 @@ public class AboutUsTest {
         aboutUsActivity.GitHub.performClick();
         verify(mockOnClickListener).onClick(aboutUsActivity.GitHub);
 
-        // Verify the call to openGitHubLink
         verify(aboutUsActivity).openGitHubLink();
     }
 

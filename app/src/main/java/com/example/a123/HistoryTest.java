@@ -61,7 +61,7 @@ public class HistoryTest {
         Mockito.when(mockMenuItem.getItemId()).thenReturn(R.id.nav_logout);
         historyActivity.onNavigationItemSelected(mockMenuItem);
 
-        // Verify that FirebaseAuth.getInstance().signOut() is called
+
         verify(FirebaseAuth.getInstance()).signOut();
 
         Intent expectedIntent = new Intent(ApplicationProvider.getApplicationContext(), Login.class);
