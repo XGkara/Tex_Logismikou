@@ -45,17 +45,18 @@ public class AboutUs extends AppCompatActivity implements NavigationView.OnNavig
         GitHub.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                openLink(v);
-            }
-
-            public void openLink(View v) {
-                String url = "https://github.com/XGkara/Tex_Logismikou";
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setData(Uri.parse(url));
-                startActivity(intent);
+                openGitHubLink();
             }
         });
     }
+
+    public void openGitHubLink() {
+        String url = "https://github.com/XGkara/Tex_Logismikou";
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(url));
+        startActivity(intent);
+    }
+
 
 
 
