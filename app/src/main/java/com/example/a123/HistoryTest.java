@@ -12,7 +12,7 @@ import com.example.a123.AboutUs;
 import com.example.a123.History;
 import com.example.a123.Login;
 import com.example.a123.MainActivity;
-import com.example.a123.Settings;
+import com.example.a123.Favorites;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 
@@ -40,11 +40,7 @@ public class HistoryTest {
     private History historyActivity;
 
     @Before
-    public void setUp() {
-        MockitoAnnotations.initMocks(this);
-        historyActivity = new History();
-        historyActivity.drawerLayout = mockDrawerLayout;
-    }
+
 
     @Test
     public void testNavigationItemSelected() {
@@ -81,10 +77,10 @@ public class HistoryTest {
 
     @Test
     public void testSettingsItemSelected() {
-        Mockito.when(mockMenuItem.getItemId()).thenReturn(R.id.nav_settings);
+        Mockito.when(mockMenuItem.getItemId()).thenReturn(R.id.nav_favorites);
         historyActivity.onNavigationItemSelected(mockMenuItem);
 
-        Intent expectedIntent = new Intent(ApplicationProvider.getApplicationContext(), Settings.class);
+        Intent expectedIntent = new Intent(ApplicationProvider.getApplicationContext(), Favorites.class);
         verify(historyActivity).startActivity(expectedIntent);
         verify(historyActivity).finish();
     }
