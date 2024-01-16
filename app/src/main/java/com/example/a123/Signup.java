@@ -32,15 +32,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Signup extends AppCompatActivity {
-
     TextInputEditText editTextEmail, editTextPassword;
     Button buttonLogIn, buttonqLogIn, buttonSignUp;
     FirebaseAuth mAuth;
     ProgressBar progressBar;
     TextView textView;
-
     String emails, passwords;
-
     @Override
     public void onStart() {
         super.onStart();
@@ -52,8 +49,6 @@ public class Signup extends AppCompatActivity {
 
         }
     }
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,11 +68,8 @@ public class Signup extends AppCompatActivity {
                 Intent intent = new Intent(getApplicationContext(),Login.class);
                 startActivity(intent);
                 finish();
-
-
             }
         });
-
 
         buttonSignUp.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -101,13 +93,9 @@ public class Signup extends AppCompatActivity {
                     return;
                 }
 
-
-
                 mAuth.createUserWithEmailAndPassword(emails, passwords)
 
-
                         .addOnCompleteListener( new OnCompleteListener<AuthResult>() {
-
 
                             @Override
                             public void onComplete(@NonNull Task<AuthResult> task) {

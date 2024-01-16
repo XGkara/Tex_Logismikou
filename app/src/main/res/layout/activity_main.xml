@@ -28,13 +28,6 @@
             app:layout_constraintTop_toTopOf="parent" />
 
 
-
-
-
-
-
-
-
         <androidx.appcompat.widget.Toolbar
             android:layout_width="match_parent"
             android:layout_height="60dp"
@@ -59,15 +52,12 @@
                 android:name="com.google.android.gms.maps.SupportMapFragment"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                tools:layout="@layout/activity_signup" />
+                 />
 
 
         </FrameLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-    
-
 
     <com.google.android.material.navigation.NavigationView
         android:layout_width="wrap_content"

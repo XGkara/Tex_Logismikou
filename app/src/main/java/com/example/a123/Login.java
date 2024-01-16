@@ -71,17 +71,14 @@ public class Login extends AppCompatActivity {
             password = String.valueOf(editTextPassword.getText());
             email = String.valueOf(editTextEmail.getText());
 
-
             if (TextUtils.isEmpty(email)){
                 Toast.makeText(Login.this,"Enter email", Toast.LENGTH_SHORT).show();
                 return;
             }
-
             if (TextUtils.isEmpty(password)){
                 Toast.makeText(Login.this,"Enter password", Toast.LENGTH_SHORT).show();
                 return;
             }
-
             mAuth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener( new OnCompleteListener<AuthResult>() {
                         @Override
@@ -93,10 +90,8 @@ public class Login extends AppCompatActivity {
                                 startActivity(intent);
                                 finish();
                             } else {
-
                                 Toast.makeText(Login.this, "Authentication failed.",
                                         Toast.LENGTH_SHORT).show();
-
                             }
                         }
                     });

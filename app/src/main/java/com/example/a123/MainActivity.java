@@ -256,13 +256,35 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .setNegativeButton("Calculate Distance", (dialog, which) -> {
                     if (place != null && place.getLatLng() != null && currentLocation != null) {
                         clearPolylines();
-                        start = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
-                        end = place.getLatLng();
-                        Findroutes(start, end);
+                        showModeSelectionDialog(place);
                     }
+                })
+
+                .show();
+    }
+    private void showModeSelectionDialog(Place place) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Select Mode")
+                .setPositiveButton("Walking", (dialog, which) -> {
+                    dialog.dismiss();
+                    calculateDistance(place, AbstractRouting.TravelMode.WALKING);
+                })
+                .setNegativeButton("Driving", (dialog, which) -> {
+                    dialog.dismiss();
+                    calculateDistance(place, AbstractRouting.TravelMode.DRIVING);
                 })
                 .show();
     }
+
+    private void calculateDistance(Place place, AbstractRouting.TravelMode mode) {
+        if (place != null && place.getLatLng() != null && currentLocation != null) {
+            clearPolylines();
+            start = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+            end = place.getLatLng();
+            Findroutes(start, end, mode);
+        }
+    }
+
 
 
 
@@ -320,7 +342,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 start=new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
                 //start route finding
-                Findroutes(start,end);
+                Findroutes(start,end, AbstractRouting.TravelMode.WALKING);
 
                 //calculate distance
                 float[] results = new float[1];
@@ -353,7 +375,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
-    private void Findroutes(LatLng start, LatLng end) {
+    private void Findroutes(LatLng start, LatLng end, AbstractRouting.TravelMode mode) {
 
         if(start==null || end==null) {
             Toast.makeText(MainActivity.this,"Unable to get location", Toast.LENGTH_LONG).show();
@@ -362,11 +384,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         {
 
             Routing routing = new Routing.Builder()
-                    .travelMode(AbstractRouting.TravelMode.DRIVING)
+                    .travelMode(mode)
                     .withListener(this)
                     .alternativeRoutes(true)
                     .waypoints(start, end)
-                    .key("AIzaSyAkN5S8_mhBiljsTKC7LuvT_eCt1Z8DQFI")  //also define your api key here.
+                    .key("AIzaSyAkN5S8_mhBiljsTKC7LuvT_eCt1Z8DQFI") // also define your api key here.
                     .build();
             routing.execute();
         }
@@ -450,11 +472,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
     public void onRoutingCancelled() {
 
-        Findroutes(start,end);
+        Findroutes(start,end, AbstractRouting.TravelMode.WALKING);
     }
 
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Findroutes(start,end);
+        Findroutes(start,end, AbstractRouting.TravelMode.WALKING);
 
     }
 
