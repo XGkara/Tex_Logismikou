@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Places.initialize(getApplicationContext(), "AIzaSyAkN5S8_mhBiljsTKC7LuvT_eCt1Z8DQFI");
+        Places.initialize(getApplicationContext(), "");
         AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment)
                 getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
 
@@ -384,7 +384,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     .withListener(this)
                     .alternativeRoutes(true)
                     .waypoints(start, end)
-                    .key("AIzaSyAkN5S8_mhBiljsTKC7LuvT_eCt1Z8DQFI") // also define your api key here.
+                    .key("") // also define your api key here.
                     .build();
             routing.execute();
         }
